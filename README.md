@@ -12,6 +12,7 @@
 ![image](https://user-images.githubusercontent.com/7411249/138850520-f530ec9e-2dd8-42e0-9776-cfebe7a40638.png)
 ## sell 出售代币
 ![image](https://user-images.githubusercontent.com/7411249/138850629-f8a2409d-d311-4a24-836d-44ca92aac5fd.png)
+
 参数“ap”，0.1表示10%，1表示100%，以此类推
 参数“sbp”，设置当前代币/bnb交易对的价格，当达到价格时会执行卖出，否则会一直循环，若设置0则直接卖出
 ## checkliq 检测交易对
@@ -20,4 +21,5 @@
 ![image](https://user-images.githubusercontent.com/7411249/138851030-56528574-cbfe-4192-a43d-fe856e545ec3.png)
 ## makenew 打新快跑专用
 ![image](https://user-images.githubusercontent.com/7411249/138851186-ba0c9730-40d3-43c5-a3f7-4f1da579ba17.png)
+
 参数“incr”，0.1表示10%，1表示100%，以此类推，当`买入价格>=买入价格+买入价格*incr`时，该命令会把买入的bnb本金卖出，常见的打新保本策略
