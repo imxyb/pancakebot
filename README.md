@@ -14,6 +14,7 @@
 ![image](https://user-images.githubusercontent.com/7411249/138850629-f8a2409d-d311-4a24-836d-44ca92aac5fd.png)
 
 参数“ap”，0.1表示10%，1表示100%，以此类推
+
 参数“sbp”，设置当前代币/bnb交易对的价格，当达到价格时会执行卖出，否则会一直循环，若设置0则直接卖出
 ## checkliq 检测交易对
 ![image](https://user-images.githubusercontent.com/7411249/138850853-62071905-b1a4-4457-af64-bd0263359a38.png)
