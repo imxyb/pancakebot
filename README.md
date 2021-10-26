@@ -4,6 +4,9 @@
 1. 支持买入卖出，挂单卖出，以及打新快进快出的功能
 2. 仅支持bnb买入
 
+# 安装
+版本python3及以上
+
 # 配置
 在home目录创建config.json，模板参考config.json.tpl，配置好你的钱包地址和私钥就可以
 # 命令参考：python main.py
