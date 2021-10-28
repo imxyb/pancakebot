@@ -19,7 +19,7 @@ class TXFail(Exception):
 
 class PancakeSwapBot:
     def __init__(self, target_address, from_token_address=None):
-        bsc = "https://bsc-dataseed.binance.org/"
+        bsc = "https://bsc-dataseed4.ninicoin.io/"
         self.web3 = Web3(Web3.HTTPProvider(bsc))
 
         self.pancake_factory_address = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73"
@@ -200,9 +200,17 @@ def getpriceft(ta, ft):
 @click.option('--ta', help='目标token')
 @click.option('--ft', help='来源token，默认bnb')
 @click.option('--ab', help='买入的来源币种数量', type=float)
-def buy(ta, ft, ab):
+@click.option('--atprice', help='设定买入价，只有等于或小于买入价才买入', type=float, default=0)
+def buy(ta, ft, ab, atprice):
     while True:
         bot = PancakeSwapBot(ta, ft)
+        try:
+            ft_price = bot.get_price_ft()
+            if ft_price > atprice:
+                print('当前价格:{}>设定买入价:{}，放弃'.format(ft_price, atprice))
+        except Exception as e:
+            print('bsc节点不稳定,err:{}'.format(e))
+            continue
         try:
             bot.buy(ab)
             break
@@ -211,7 +219,7 @@ def buy(ta, ft, ab):
             continue
         except Exception as e:
             print('买入失败,err:{}'.format(e))
-            break
+            continue
 
 
 @click.command()
@@ -221,12 +229,19 @@ def buy(ta, ft, ab):
 @click.option('--lp', help='低于上次买入价格的多少比例将再次买入', type=float)
 @click.option('--minip', help='最低吸筹价', type=float)
 @click.option('--maxbuy', help='最多买入次数', type=int, default=1)
-def attract(ta, ft, ab, lp, minip, maxbuy):
+@click.option('--atprice', help='设定买入价，只有等于或小于买入价才买入', type=float, default=0)
+def attract(ta, ft, ab, lp, minip, maxbuy, atprice):
     prev_ft_price = 0
     lp = decimal.Decimal(lp)
     while maxbuy > 0:
         bot = PancakeSwapBot(ta, ft)
-        ft_price = bot.get_price_ft()
+        try:
+            ft_price = bot.get_price_ft()
+            if ft_price > atprice:
+                print('当前价格:{}>设定买入价:{}，放弃'.format(ft_price, atprice))
+        except Exception as e:
+            print('bsc节点不稳定,err:{}'.format(e))
+            continue
         next_price = prev_ft_price - prev_ft_price * lp
         if next_price != 0 and next_price <= minip:
             next_price = minip
@@ -247,7 +262,11 @@ def attract(ta, ft, ab, lp, minip, maxbuy):
                 print('买入失败,err:{}'.format(e))
                 continue
         else:
-            print('当前价格:{},下次吸筹价格:{}'.format(bot.get_price_ft(), prev_ft_price - prev_ft_price * lp))
+            try:
+                print('当前价格:{},下次吸筹价格:{},剩下买入次数:{}'.format(bot.get_price_ft(), next_price, maxbuy))
+            except Exception as e:
+                print('bsc节点不稳定,err:{}'.format(e))
+                continue
     else:
         print('达到最大买入次数，退出')
 
