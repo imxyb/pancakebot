@@ -182,7 +182,7 @@ def getpricebnb(ta):
 
 @click.command()
 @click.option('--ta', help='目标token')
-@click.option('--ab', help='买入的来源币种数量', type=float)
+@click.option('--ab', help='买入的bnb数量', type=float)
 @click.option('--atprice', help='设定买入价，只有等于或小于买入价才买入', type=float, default=0)
 def buy(ta, ab, atprice):
     while True:
@@ -208,7 +208,7 @@ def buy(ta, ab, atprice):
 
 @click.command()
 @click.option('--ta', help='目标token')
-@click.option('--ab', help='买入的来源币种数量', type=float)
+@click.option('--ab', help='买入的bnb数量', type=float)
 @click.option('--lp', help='低于上次买入价格的多少比例将再次买入,0~1,例如0.1表示低于上次价格的10%', type=float)
 @click.option('--minip', help='最低吸筹价，表示当现价格低于设置价格时会连续买入', type=float)
 @click.option('--maxbuy', help='最多买入次数', type=int, default=1)
@@ -258,9 +258,9 @@ def attract(ta, ab, lp, minip, maxbuy, atprice):
 @click.command()
 @click.option('--ta', help='目标token')
 @click.option('--amount', help='卖出数量', default=0, type=float)
-@click.option('--ab', help='卖出的来源币种', default=0, type=float)
+@click.option('--ab', help='卖出的bnb数量', default=0, type=float)
 @click.option('--ap', help='卖出比例，0~1', default=0, type=float)
-@click.option('--spb', help='挂单来源币种价格', default=0, type=float)
+@click.option('--spb', help='挂单token/bnb交易对的出售价格', default=0, type=float)
 @click.option('--maxsell', help='连续卖出次数', default=1, type=float)
 def sell(ta, amount, ab, ap, spb, maxsell):
     bot = PancakeSwapBot(ta)
@@ -289,7 +289,7 @@ def checkliq(ta):
 # 适用打新，设定翻倍出本
 @click.command()
 @click.option('--ta', help='目标token', required=True)
-@click.option('--bab', help='买入来源数量', type=float, required=True)
+@click.option('--bab', help='买入bnb数量', type=float, required=True)
 @click.option('--incr', help='达到涨幅卖出,0~10000', type=float, default=2)
 def makenew(ta, bab, incr):
     bot = PancakeSwapBot(ta)
