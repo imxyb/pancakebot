@@ -12,12 +12,12 @@
 # 命令参考：python main.py
 ![image](https://user-images.githubusercontent.com/7411249/139805893-019fd47f-bf29-4deb-ba6f-4528af927dfa.png)
 ## buy 购买代币
-![image](https://user-images.githubusercontent.com/7411249/139805968-98820c0a-143f-4795-8b5d-bc0a45585b3d.png)
+![image](https://user-images.githubusercontent.com/7411249/139807001-024ed9f0-c815-4fee-aa82-171e55b643a0.png)
 
 参数“atprice”表示在特定代币/bnb价格的时候才会买入，否则会一直循环等待，类似挂单功能，若设置0则无限制
 
 ## sell 出售代币
-![image](https://user-images.githubusercontent.com/7411249/139806007-0146f785-23ff-4234-8853-3477f18ffa84.png)
+![image](https://user-images.githubusercontent.com/7411249/139807040-9d88c928-83a4-4350-a884-d9cc9d781c4f.png)
 
 参数“ap”，0.1表示10%，1表示100%，以此类推
 
@@ -28,12 +28,12 @@
 ## getpricebnb 检测代币与bnb的交易对价格
 ![image](https://user-images.githubusercontent.com/7411249/138851030-56528574-cbfe-4192-a43d-fe856e545ec3.png)
 ## makenew 打新快跑专用
-![image](https://user-images.githubusercontent.com/7411249/138851186-ba0c9730-40d3-43c5-a3f7-4f1da579ba17.png)
+![image](https://user-images.githubusercontent.com/7411249/139807090-0b465ffc-cd82-4edb-89b5-d6795c1918c8.png)
 
 
 参数“incr”，0.1表示10%，1表示100%，以此类推，当`当前价格>=买入价格+买入价格*incr`时，该命令会把买入的bnb本金卖出，否则会一直循环，常见的打新保本策略
 
 ## attract 吸筹
-![image](https://user-images.githubusercontent.com/7411249/139806548-c8e47d77-d154-45e7-a296-f509d68326f4.png)
+![image](https://user-images.githubusercontent.com/7411249/139807126-31524a19-e77e-4bd6-bd68-bb77f633427b.png)
 
 
