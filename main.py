@@ -7,6 +7,7 @@ import click
 from web3 import Web3
 
 bnb_address = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c'
+usdt_address_token = "0x55d398326f99059ff775485246999027b3197955"
 
 
 class InsufficientBalance(Exception):
@@ -19,7 +20,7 @@ class TXFail(Exception):
 
 class PancakeSwapBot:
     def __init__(self, target_address):
-        bsc = "https://bsc-dataseed4.ninicoin.io/"
+        bsc = "https://bsc-dataseed.binance.org/"
         self.web3 = Web3(Web3.HTTPProvider(bsc))
 
         self.pancake_factory_address = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73"
@@ -37,6 +38,7 @@ class PancakeSwapBot:
 
         # 默认bnb
         self.bnb_token_address = self.web3.toChecksumAddress(bnb_address)
+        self.usdt_token_address = self.web3.toChecksumAddress(usdt_address_token)
         bnbabi = """
         [{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"constant":true,"inputs":[],"name":"_decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"_name","outputs":[{"internalType":"string","name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"_symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getOwner","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mint","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"renounceOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]
         """
@@ -59,6 +61,7 @@ class PancakeSwapBot:
 
     def check_liq(self) -> bool:
         pair = self.pancake_factory_contract.functions.getPair(self.bnb_token_address, self.target_address).call()
+        print(pair)
         try:
             pair.index("0x0000000")
             return False
@@ -68,11 +71,14 @@ class PancakeSwapBot:
     def get_bnb_balance(self):
         return self.from_token_contract.functions.balanceOf(self.web3.toChecksumAddress(self.from_address)).call()
 
-    def buy(self, amount_bnb):
+    def buy(self, amount_bnb, pair="bnb"):
         value = self.web3.toWei(amount_bnb, 'ether')
+        path = [self.bnb_token_address, self.target_address]
+        if pair == "usdt":
+            path = [self.bnb_token_address, self.usdt_token_address, self.target_address]
         txn = self.pancake_router_contract.functions.swapExactETHForTokens(
             0,
-            [self.bnb_token_address, self.target_address],
+            path,
             self.web3.toChecksumAddress(self.from_address),
             (int(time.time()) + 1000000)
         ).buildTransaction({
@@ -104,9 +110,21 @@ class PancakeSwapBot:
                                                                      self.bnb_token_address]).call()
         return self.web3.fromWei(pair[1], 'ether')
 
+    def get_price_usdt(self):
+        pair = self.pancake_router_contract.functions.getAmountsOut(1 * pow(10, self.get_decimals()),
+                                                                    [self.target_address,
+                                                                     self.usdt_token_address]).call()
+        return self.web3.fromWei(pair[1], 'ether')
+
     def get_target_amount_from_bnb(self, amount_bnb):
         pair = self.pancake_router_contract.functions.getAmountsOut(self.web3.toWei(amount_bnb, 'ether'),
                                                                     [self.bnb_token_address,
+                                                                     self.target_address]).call()
+        return pair[1]
+
+    def get_target_amount_from_usdt(self, amount_usdt):
+        pair = self.pancake_router_contract.functions.getAmountsOut(self.web3.toWei(amount_usdt, 'ether'),
+                                                                    [self.usdt_token_address,
                                                                      self.target_address]).call()
         return pair[1]
 
@@ -124,16 +142,8 @@ class PancakeSwapBot:
         except Exception as e:
             raise e
 
-    def sell(self, amount, amount_bnb, amount_percent, sell_at_bnb_price):
+    def sell(self, amount, amount_bnb, amount_percent, pair="bnb"):
         txn_amount = 0
-
-        while sell_at_bnb_price > 0:
-            price_bnb = self.get_price_bnb()
-            if price_bnb > sell_at_bnb_price:
-                break
-            print('未到达卖出价格,当前price:{}'.format(price_bnb))
-            time.sleep(5)
-            continue
 
         # 授权
         self.approve()
@@ -147,10 +157,14 @@ class PancakeSwapBot:
         elif amount_bnb > 0:
             txn_amount = self.get_target_amount_from_bnb(amount_bnb)
 
+        path = [self.target_address, self.bnb_token_address],
+        if pair == "usdt":
+            path = [self.target_address, self.usdt_token_address, self.bnb_token_address]
+
         txn = self.pancake_router_contract.functions.swapExactTokensForETHSupportingFeeOnTransferTokens(
             txn_amount,
             0,
-            [self.target_address, self.bnb_token_address],
+            path,
             self.from_address,
             (int(time.time()) + 1000000)
         ).buildTransaction({
@@ -182,28 +196,44 @@ def getpricebnb(ta):
 
 @click.command()
 @click.option('--ta', help='目标token')
+def getpriceusdt(ta):
+    bot = PancakeSwapBot(ta)
+    print(bot.get_price_usdt())
+
+
+@click.command()
+@click.option('--ta', help='目标token')
 @click.option('--ab', help='买入的bnb数量', type=float)
+@click.option('--at', help='买入的代币数量', type=float)
 @click.option('--atprice', help='设定买入价，只有等于或小于买入价才买入', type=float, default=0)
-def buy(ta, ab, atprice):
-    while True:
+@click.option('--maxbuy', help='连续买n次', type=int, default=1)
+@click.option('--pair', help='挂单交易对,默认bnb', type=str, default="bnb")
+def buy(ta, ab, at, atprice, maxbuy, pair):
+    while maxbuy > 0:
         bot = PancakeSwapBot(ta)
         try:
-            bnb_price = bot.get_price_bnb()
-            if 0 < atprice < bnb_price:
-                print('当前价格:{}>设定买入价:{}，放弃'.format(bnb_price, atprice))
+            if pair == "usdt":
+                pair_price = bot.get_price_usdt()
+            else:
+                pair_price = bot.get_price_bnb()
+            if 0 < atprice < pair_price:
+                print('当前价格:{}>设定买入价:{}，放弃'.format(pair_price, atprice))
                 continue
+            if at is not None and ab is None:
+                ab = decimal.Decimal(at) * pair_price
         except Exception as e:
             print('bsc节点不稳定,err:{}'.format(e))
             continue
         try:
-            bot.buy(ab)
-            break
+            bot.buy(ab, pair)
+            maxbuy -= 1
         except TXFail:
             print('交易偶发失败，重试')
             continue
         except Exception as e:
             print('买入失败,err:{}'.format(e))
             continue
+    print("购买完成")
 
 
 @click.command()
@@ -213,7 +243,7 @@ def buy(ta, ab, atprice):
 @click.option('--minip', help='最低吸筹价，表示当现价格低于设置价格时会连续买入', type=float)
 @click.option('--maxbuy', help='最多买入次数', type=int, default=1)
 @click.option('--atprice', help='设定买入价，只有等于或小于买入价才买入', type=float, default=0)
-def attract(ta, ab, lp, minip, maxbuy, atprice):
+def bdp(ta, ab, lp, minip, maxbuy, atprice):
     prev_bnb_price = 0
     lp = decimal.Decimal(lp)
     while maxbuy > 0:
@@ -260,13 +290,22 @@ def attract(ta, ab, lp, minip, maxbuy, atprice):
 @click.option('--amount', help='卖出数量', default=0, type=float)
 @click.option('--ab', help='卖出的bnb数量', default=0, type=float)
 @click.option('--ap', help='卖出比例，0~1', default=0, type=float)
-@click.option('--spb', help='挂单token/bnb交易对的出售价格', default=0, type=float)
 @click.option('--maxsell', help='连续卖出次数', default=1, type=float)
-def sell(ta, amount, ab, ap, spb, maxsell):
+@click.option('--pair', help='交易对，默认bnb', default="bnb", type=str)
+@click.option('--atprice', help='设定卖出价，只有等于或大于卖出价才买入', type=float, default=None)
+def sell(ta, amount, ab, ap, maxsell, pair, atprice):
     bot = PancakeSwapBot(ta)
     while maxsell > 0:
         try:
-            bot.sell(amount, ab, ap, spb)
+            if pair == "usdt":
+                pair_price = bot.get_price_usdt()
+            else:
+                pair_price = bot.get_price_bnb()
+
+            if atprice is not None and pair_price < atprice:
+                print('当前价格:{}<设定卖出价:{}，放弃'.format(pair_price, atprice))
+                continue
+            bot.sell(amount, ab, ap, pair)
             maxsell -= 1
         except TXFail:
             print('交易偶发失败，重试')
@@ -290,8 +329,9 @@ def checkliq(ta):
 @click.command()
 @click.option('--ta', help='目标token', required=True)
 @click.option('--bab', help='买入bnb数量', type=float, required=True)
-@click.option('--incr', help='达到涨幅卖出,0~10000', type=float, default=2)
-def makenew(ta, bab, incr):
+@click.option('--incr', help='达到涨幅卖出,0~10000', type=float, default=1)
+@click.option('--blocknumber', help='达到某个区块高度再去购买，防杀', type=int, required=False)
+def makenew(ta, bab, incr, blocknumber):
     bot = PancakeSwapBot(ta)
 
     while not bot.check_liq():
@@ -301,6 +341,13 @@ def makenew(ta, bab, incr):
 
     print('交易对已建立，进入购买过程')
     while True:
+        # 防杀
+        if blocknumber is not None:
+            bn = bot.web3.eth.get_block_number()
+            if bn < blocknumber:
+                print("当前区块:{}<可购买区块:{},等待...", bn, blocknumber)
+                continue
+
         try:
             bot.buy(bab)
             break
@@ -309,7 +356,7 @@ def makenew(ta, bab, incr):
             continue
         except Exception as e:
             print('可能尚未开盘,err:{}'.format(e))
-            time.sleep(3)
+            time.sleep(1)
             continue
 
     price_bnb = bot.get_price_bnb()
@@ -336,7 +383,6 @@ def makenew(ta, bab, incr):
                     break
             break
         print('未达到出本价格{},当前价格:{}'.format(sell_principal, cur_price_bnb))
-        time.sleep(1)
         continue
 
     if sell_pass:
@@ -352,13 +398,61 @@ def getbalance(ta):
     print(bot.get_balance() / pow(10, bot.get_decimals()))
 
 
+@click.command()
+@click.option('--ta', help='目标token', required=True)
+@click.option('--ab', help='波段金额bnb', type=float, required=True)
+@click.option('--buyatprice', help='购买价格', type=float, required=True)
+@click.option('--sellatprice', help='出售价格', type=float, required=True)
+@click.option('--times', help='波段次数', type=int, required=False, default=1)
+@click.option('--pair', help='交易对,默认bnb', type=str, required=False, default='bnb')
+def band(ta, ab, buyatprice, sellatprice, times, pair):
+    bot = PancakeSwapBot(ta)
+    while times > 0:
+        try:
+            if pair == "usdt":
+                pair_price = bot.get_price_usdt()
+            else:
+                pair_price = bot.get_price_bnb()
+
+            if pair_price > buyatprice:
+                print('当前价格:{}>设定买入价:{}，放弃'.format(pair_price, buyatprice))
+                continue
+
+            bot.buy(ab, pair)
+            print("购买成功")
+            while True:
+                if pair == "usdt":
+                    pair_price = bot.get_price_usdt()
+                else:
+                    pair_price = bot.get_price_bnb()
+
+                if pair_price < sellatprice:
+                    print('当前价格:{}<设定卖出价:{}，放弃'.format(pair_price, sellatprice))
+                    continue
+                bot.sell(0, ab, 0, pair)
+                print("出售成功")
+            print("完成一次波段")
+            times -= 1
+        except TXFail:
+            print('交易偶发失败，重试')
+            continue
+        except Exception as e:
+            print('波段失败,err:{}'.format(e))
+            continue
+    print("退出波段")
+
+
 cli.add_command(buy)
 cli.add_command(sell)
 cli.add_command(getpricebnb)
+cli.add_command(getpriceusdt)
 cli.add_command(checkliq)
 cli.add_command(makenew)
-cli.add_command(attract)
+cli.add_command(bdp)
 cli.add_command(getbalance)
+cli.add_command(band)
 
 if __name__ == '__main__':
-    cli()
+    bot = PancakeSwapBot("0x26193c7fa4354ae49ec53ea2cebc513dc39a10aa")
+    print(bot.check_liq())
+    # cli()
