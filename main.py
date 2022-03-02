@@ -361,7 +361,7 @@ def makenew(ta, bab, incr, minliq, afterbn):
 
     start_block_number = bot.web3.eth.get_block_number()
     can_buy_block_number = start_block_number + afterbn
-    print('交易对已建立, 当前区块:{}, 可购买区块:{}，进入购买过程'.format(start_block_number, can_buy_block_number))
+    print('开始购买, 当前区块:{}, 可购买区块:{}，进入购买过程'.format(start_block_number, can_buy_block_number))
     while True:
         # 防杀
         if afterbn is not None:
