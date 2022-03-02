@@ -360,12 +360,12 @@ def makenew(ta, bab, incr, minliq, afterbn):
             continue
 
     start_block_number = bot.web3.eth.get_block_number()
-    print('交易对已建立, 当前区块:{}，进入购买过程'.format(start_block_number))
+    can_buy_block_number = start_block_number + afterbn
+    print('交易对已建立, 当前区块:{}, 可购买区块:{}，进入购买过程'.format(start_block_number, can_buy_block_number))
     while True:
         # 防杀
         if afterbn is not None:
             current_block_number = bot.web3.eth.get_block_number()
-            can_buy_block_number = start_block_number + afterbn
             if current_block_number < can_buy_block_number:
                 print("当前区块:{}<可购买区块:{},等待...", current_block_number, can_buy_block_number)
                 continue
