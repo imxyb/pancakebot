@@ -59,17 +59,19 @@ class PancakeSwapBot:
         with open(os.path.join(os.environ['HOME'], 'config.json')) as f:
             return json.load(f)
 
-    def check_liq(self) -> bool:
+    def check_liq(self):
         pair = self.pancake_factory_contract.functions.getPair(self.bnb_token_address, self.target_address).call()
-        print(pair)
         try:
             pair.index("0x0000000")
-            return False
+            return None, False
         except Exception as e:
-            return True
+            return pair, True
 
     def get_bnb_balance(self):
         return self.from_token_contract.functions.balanceOf(self.web3.toChecksumAddress(self.from_address)).call()
+
+    def get_pair_bnb_balance(self, pair_address):
+        return self.from_token_contract.functions.balanceOf(self.web3.toChecksumAddress(pair_address)).call()
 
     def buy(self, amount_bnb, pair="bnb"):
         value = self.web3.toWei(amount_bnb, 'ether')
@@ -319,7 +321,8 @@ def sell(ta, amount, ab, ap, maxsell, pair, atprice):
 @click.option('--ta', help='目标token')
 def checkliq(ta):
     bot = PancakeSwapBot(ta)
-    if bot.check_liq():
+    _, exist = bot.check_liq()
+    if not exist:
         print('交易对已建立')
     else:
         print('交易对未建立')
@@ -330,22 +333,41 @@ def checkliq(ta):
 @click.option('--ta', help='目标token', required=True)
 @click.option('--bab', help='买入bnb数量', type=float, required=True)
 @click.option('--incr', help='达到涨幅卖出,0~10000', type=float, default=1)
-@click.option('--blocknumber', help='达到某个区块高度再去购买，防杀', type=int, required=False)
-def makenew(ta, bab, incr, blocknumber):
+@click.option('--minliq', help='池子最小bnb数量，当小于该bnb数则认为该币种尚未开盘或被注入私人流动车', type=float, default=0)
+@click.option('--afterbn', help='监测到流动车会记录当前区块高度，在此区块的n个区块后再购买，防杀', type=int, required=False)
+def makenew(ta, bab, incr, minliq, afterbn):
     bot = PancakeSwapBot(ta)
 
-    while not bot.check_liq():
+    while True:
+        pair, exist = bot.check_liq()
+        if exist:
+            break
+
         print('尚未建立交易对')
-        time.sleep(3)
+        time.sleep(1)
         continue
 
-    print('交易对已建立，进入购买过程')
+    print("交易对已经建立")
+
+    # 监测流动池大小，小于设置的最小池子bnb数则继续循环等待
+    if pair is not None:
+        while True:
+            pair_bnb_balance = bot.get_pair_bnb_balance(pair) // pow(10, 18)
+            if pair_bnb_balance > minliq:
+                break
+            print('池子bnb数:{}<最小开盘池子bnb数:{}'.format(pair_bnb_balance, minliq))
+            time.sleep(1)
+            continue
+
+    start_block_number = bot.web3.eth.get_block_number()
+    print('交易对已建立, 当前区块:{}，进入购买过程'.format(start_block_number))
     while True:
         # 防杀
-        if blocknumber is not None:
-            bn = bot.web3.eth.get_block_number()
-            if bn < blocknumber:
-                print("当前区块:{}<可购买区块:{},等待...", bn, blocknumber)
+        if afterbn is not None:
+            current_block_number = bot.web3.eth.get_block_number()
+            can_buy_block_number = start_block_number + afterbn
+            if current_block_number < can_buy_block_number:
+                print("当前区块:{}<可购买区块:{},等待...", current_block_number, can_buy_block_number)
                 continue
 
         try:
@@ -453,6 +475,4 @@ cli.add_command(getbalance)
 cli.add_command(band)
 
 if __name__ == '__main__':
-    bot = PancakeSwapBot("0x26193c7fa4354ae49ec53ea2cebc513dc39a10aa")
-    print(bot.check_liq())
-    # cli()
+    cli()
