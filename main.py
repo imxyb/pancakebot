@@ -332,14 +332,15 @@ def checkliq(ta):
         print('交易对未建立')
 
 
-# 适用打新，设定翻倍出本
+# 适用打新，设定翻倍出本(清仓)
 @click.command()
 @click.option('--ta', help='目标token', required=True)
 @click.option('--bab', help='买入bnb数量', type=float, required=True)
 @click.option('--incr', help='达到涨幅卖出,0~10000', type=float, default=1)
 @click.option('--minliq', help='池子最小bnb数量，当小于该bnb数则认为该币种尚未开盘或被注入私人流动车', type=float, default=0)
 @click.option('--afterbn', help='监测到流动车会记录当前区块高度，在此区块的n个区块后再购买，防杀', type=int, required=False)
-def makenew(ta, bab, incr, minliq, afterbn):
+@click.option('--sellall', help='达到涨幅是否清仓,0否1是', type=int, required=False, default=0)
+def makenew(ta, bab, incr, minliq, afterbn, sellall):
     bot = PancakeSwapBot(ta)
 
     while True:
@@ -392,17 +393,20 @@ def makenew(ta, bab, incr, minliq, afterbn):
     price_bnb = bot.get_price_bnb()
     sell_principal = price_bnb + price_bnb * decimal.Decimal(incr)
 
-    print('当前币量:{}，买入价格:{},出本价格:{}'.format(bot.get_balance() // pow(10, bot.get_decimals()),
+    print('当前币量:{}，买入价格:{},出本(清仓)价格:{}'.format(bot.get_balance() // pow(10, bot.get_decimals()),
                                            price_bnb, sell_principal))
 
     sell_pass = False
     while True:
         cur_price_bnb = bot.get_price_bnb()
         if cur_price_bnb >= sell_principal:
-            print('达到出本价格，开始卖出本金')
+            print('达到出本(清仓)价格，开始卖出本金')
             while True:
                 try:
-                    bot.sell(0, bab, 0, 0)
+                    if sellall == 1:
+                        bot.sell(0, 0, 1)
+                    else:
+                        bot.sell(0, bab, 0)
                     sell_pass = True
                     break
                 except TXFail:
@@ -412,13 +416,13 @@ def makenew(ta, bab, incr, minliq, afterbn):
                     print('卖出失败,err:{}'.format(e))
                     break
             break
-        print('未达到出本价格{},当前价格:{}'.format(sell_principal, cur_price_bnb))
+        print('未达到出本(清仓)价格{},当前价格:{}'.format(sell_principal, cur_price_bnb))
         continue
 
     if sell_pass:
-        print('已出本，当前剩余币量:{}'.format(bot.get_balance() // pow(10, bot.get_decimals())))
+        print('已出本(清仓)，当前剩余币量:{}'.format(bot.get_balance() // pow(10, bot.get_decimals())))
     else:
-        print('出本失败，请手动卖出')
+        print('出本(清仓)失败，请手动卖出')
 
 
 @click.command()
