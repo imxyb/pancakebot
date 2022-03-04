@@ -10,6 +10,10 @@ bnb_address = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c'
 usdt_address_token = "0x55d398326f99059ff775485246999027b3197955"
 
 
+def as_num(x):
+    return '{:.12f}'.format(x)
+
+
 class InsufficientBalance(Exception):
     pass
 
@@ -359,17 +363,21 @@ def makenew(ta, bab, incr, minliq, afterbn):
             time.sleep(1)
             continue
 
-    start_block_number = bot.web3.eth.get_block_number()
-    can_buy_block_number = start_block_number + afterbn
-    print('开始购买, 当前区块:{}, 可购买区块:{}，进入购买过程'.format(start_block_number, can_buy_block_number))
-    while True:
-        # 防杀
-        if afterbn is not None:
+    if afterbn is not None:
+        start_block_number = bot.web3.eth.get_block_number()
+        can_buy_block_number = start_block_number + afterbn
+        print('当前区块:{}, 可购买区块:{}'.format(start_block_number, can_buy_block_number))
+        while True:
+            # 防杀
             current_block_number = bot.web3.eth.get_block_number()
-            if current_block_number < can_buy_block_number:
-                print("当前区块:{}<可购买区块:{},等待...", current_block_number, can_buy_block_number)
-                continue
+            if current_block_number >= can_buy_block_number:
+                break
+            print("当前区块:{}<可购买区块:{},等待...".format(current_block_number, can_buy_block_number))
+            continue
 
+    print('开始购买')
+
+    while True:
         try:
             bot.buy(bab)
             break
